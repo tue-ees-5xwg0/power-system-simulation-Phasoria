@@ -96,25 +96,25 @@ class GraphProcessor:
             raise IDNotFoundError("source_vertex_id should be a valid vertex id")
 
         visited = set()
-        self._dfs(source_vertex_id, visited)
+        self.dfs(source_vertex_id, visited)
         if len(visited) != len(vertex_ids):
             raise GraphNotFullyConnectedError("graph should be fully connected")
 
         visited = set()
-        if self._has_cycle(source_vertex_id, visited, None):
+        if self.cycle(source_vertex_id, visited, None):
             raise GraphCycleError("graph should not contain cycles")
 
-    def _dfs(self, node, visited):
+    def dfs(self, node, visited):
         visited.add(node)
         for neighbor in self.graph[node]:
             if neighbor not in visited:
-                self._dfs(neighbor, visited)
+                self.dfs(neighbor, visited)
 
-    def _has_cycle(self, node, visited, parent):
+    def cycle(self, node, visited, parent):
         visited.add(node)
         for neighbor in self.graph[node]:
             if neighbor not in visited:
-                if self._has_cycle(neighbor, visited, node):
+                if self.cycle(neighbor, visited, node):
                     return True
             elif neighbor != parent:
                 return True
