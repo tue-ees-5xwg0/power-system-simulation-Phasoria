@@ -3,17 +3,22 @@ Test file
 """
 
 import pytest
-from power_system_simulation.graph_processing import IDNotUniqueError
-from power_system_simulation.graph_processing import InputLengthDoesNotMatchError
-from power_system_simulation.graph_processing import IDNotFoundError
-from power_system_simulation.graph_processing import GraphNotFullyConnectedError
-from power_system_simulation.graph_processing import GraphCycleError
-from power_system_simulation.graph_processing import GraphProcessor
 
-class Tests():
+from power_system_simulation.graph_processing import (
+    GraphCycleError,
+    GraphNotFullyConnectedError,
+    GraphProcessor,
+    IDNotFoundError,
+    IDNotUniqueError,
+    InputLengthDoesNotMatchError,
+)
+
+
+class Tests:
     """
     Testing the raise exception in case of faulty graph
     """
+
     def test_id_not_unique_error_1(self):
         """
         Testing vertex_ids should be unique
