@@ -92,6 +92,7 @@ class GraphProcessor:
         )
         for i, (u, v) in enumerate(self.graph.edges()):
             self.graph[u][v]["edge_id"] = edge_ids[i]
+        self.graph.graph["source_vertex_id"] = source_vertex_id
 
         if len(vertex_ids) != len(set(vertex_ids)):
             raise IDNotUniqueError("vertex ids must be unique")
@@ -153,7 +154,6 @@ class GraphProcessor:
             A list of all downstream vertices.
         """
         # put your implementation here
-        pass
 
     def find_alternative_edges(self, disabled_edge_id: int) -> List[int]:
         """
@@ -191,4 +191,3 @@ class GraphProcessor:
             A list of alternative edge ids.
         """
         # put your implementation here
-        pass
