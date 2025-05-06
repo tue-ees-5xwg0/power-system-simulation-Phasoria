@@ -90,6 +90,8 @@ class GraphProcessor:
         self.graph.add_edges_from(
             [edge_vertex_id_pairs[i] for i in range(len(edge_vertex_id_pairs)) if edge_enabled[i] == 1]
         )
+        for i, (u, v) in enumerate(self.graph.edges()):
+            self.graph[u][v]['edge_id'] = edge_ids[i]
 
         if len(vertex_ids) != len(set(vertex_ids)):
             raise IDNotUniqueError("vertex ids must be unique")
