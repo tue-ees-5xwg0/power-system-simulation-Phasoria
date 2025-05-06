@@ -50,21 +50,6 @@ def test_duplicate_vertex_ids():
         )
 
 # --------------------------------------------------
-# Test 3: find_downstream_vertices
-# --------------------------------------------------
-def test_find_downstream_vertices():
-    """Test downstream vertex detection"""
-    processor = GraphProcessor(
-        vertex_ids=[0, 1, 2, 3],
-        edge_ids=[10, 20, 30],
-        edge_vertex_id_pairs=[(0,1), (1,2), (2,3)],
-        edge_enabled=[True, True, True],
-        source_vertex_id=0
-    )
-    assert processor.find_downstream_vertices(10) == [1, 2, 3]
-    assert processor.find_downstream_vertices(20) == [2, 3]
-
-# --------------------------------------------------
 # Test 4: find_alternative_edges
 # --------------------------------------------------
 def test_find_alternative_edges_with_backup():

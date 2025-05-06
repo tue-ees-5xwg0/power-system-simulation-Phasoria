@@ -120,7 +120,7 @@ class GraphProcessor:
         self.source_vertex_id = source_vertex_id
 
 
-    #this buildy the graph only using edges that are enabled
+    #this build the graph only using edges that are enabled
 
 
         self.G = nx.Graph()
