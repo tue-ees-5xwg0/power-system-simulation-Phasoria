@@ -6,29 +6,44 @@ We define a graph processor class with some function skeletons.
 
 from typing import List, Tuple
 
+import networkx as nx
+from networkx.exception import NetworkXNoCycle
+
 
 class IDNotFoundError(Exception):
-    pass
+    """
+    Raising IDNotFoundError exception
+    """
 
 
 class InputLengthDoesNotMatchError(Exception):
-    pass
+    """
+    Raising InputLengthDoesNotMatchError exception
+    """
 
 
 class IDNotUniqueError(Exception):
-    pass
+    """
+    Raising IDNotUniqueError exception
+    """
 
 
 class GraphNotFullyConnectedError(Exception):
-    pass
+    """
+    Raising GraphNotFullyConnectedError exception
+    """
 
 
 class GraphCycleError(Exception):
-    pass
+    """
+    Raising GraphCycleError exception
+    """
 
 
 class EdgeAlreadyDisabledError(Exception):
-    pass
+    """
+    Raising EdgeAlreadyDisabledError exception
+    """
 
 
 class GraphProcessor:
@@ -70,11 +85,11 @@ class GraphProcessor:
         """
         # put your implementation here
 
-        self.graph = {v: [] for v in vertex_ids}
-        for (u, v), eid, enabled in zip(edge_vertex_id_pairs, edge_ids, edge_enabled):
-            if enabled:
-                self.graph[u].append(v)
-                self.graph[v].append(u)
+        self.graph = nx.Graph()
+        self.graph.add_nodes_from(vertex_ids)
+        self.graph.add_edges_from(
+            [edge_vertex_id_pairs[i] for i in range(len(edge_vertex_id_pairs)) if edge_enabled[i] == 1]
+        )
 
         if len(vertex_ids) != len(set(vertex_ids)):
             raise IDNotUniqueError("vertex ids must be unique")
@@ -95,30 +110,21 @@ class GraphProcessor:
         if source_vertex_id not in vertex_ids:
             raise IDNotFoundError("source_vertex_id should be a valid vertex id")
 
-        visited = set()
-        self.dfs(source_vertex_id, visited)
-        if len(visited) != len(vertex_ids):
+        if nx.is_connected(self.graph) is False:
             raise GraphNotFullyConnectedError("graph should be fully connected")
 
-        visited = set()
-        if self.cycle(source_vertex_id, visited, None):
-            raise GraphCycleError("graph should not contain cycles")
-
-    def dfs(self, node, visited):
-        visited.add(node)
-        for neighbor in self.graph[node]:
-            if neighbor not in visited:
-                self.dfs(neighbor, visited)
-
-    def cycle(self, node, visited, parent):
-        visited.add(node)
-        for neighbor in self.graph[node]:
-            if neighbor not in visited:
-                if self.cycle(neighbor, visited, node):
-                    return True
-            elif neighbor != parent:
+        def has_cycle(self, sc):
+            """
+            Dealing with the output of nx.find_cycle() function
+            """
+            try:
+                nx.find_cycle(self.graph, sc)
                 return True
-        return False
+            except NetworkXNoCycle:
+                return False
+
+        if has_cycle(self, source_vertex_id) is True:
+            raise GraphCycleError("graph should not have cycles")
 
     def find_downstream_vertices(self, edge_id: int) -> List[int]:
         """
