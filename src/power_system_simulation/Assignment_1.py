@@ -1,20 +1,26 @@
-from typing import List, Tuple
 from collections import defaultdict
+from typing import List, Tuple
+
 
 class IDNotFoundError(Exception):
     pass
 
+
 class InputLengthDoesNotMatchError(Exception):
     pass
+
 
 class IDNotUniqueError(Exception):
     pass
 
+
 class GraphNotFullyConnectedError(Exception):
     pass
 
+
 class GraphCycleError(Exception):
     pass
+
 
 class GraphProcessor:
     def __init__(
@@ -77,10 +83,10 @@ class GraphProcessor:
         """Check if the enabled graph is connected using BFS."""
         if not self.vertex_ids:
             return False
-            
+
         visited = set()
         queue = [self.source_vertex_id]
-        
+
         while queue:
             vertex = queue.pop(0)
             if vertex not in visited:
@@ -88,13 +94,13 @@ class GraphProcessor:
                 for neighbor in self.graph[vertex]:
                     if (vertex, neighbor) in self.enabled_edges:
                         queue.append(neighbor)
-        
+
         return len(visited) == len(set(self.vertex_ids))
 
     def _has_cycle(self) -> bool:
         """Check if the enabled graph has cycles using DFS."""
         visited = set()
-        
+
         for vertex in self.vertex_ids:
             if vertex not in visited:
                 if self._dfs_cycle_detect(vertex, visited, None):
@@ -104,33 +110,33 @@ class GraphProcessor:
     def _dfs_cycle_detect(self, vertex, visited, parent):
         """DFS helper for cycle detection."""
         visited.add(vertex)
-        
+
         for neighbor in self.graph[vertex]:
             if (vertex, neighbor) not in self.enabled_edges:
                 continue
-                
+
             if neighbor not in visited:
                 if self._dfs_cycle_detect(neighbor, visited, vertex):
                     return True
             elif neighbor != parent:
                 return True
-                
+
         return False
 
     def _compute_distances(self) -> dict:
         """Compute shortest distances from source using BFS."""
-        distances = {v: float('inf') for v in self.vertex_ids}
+        distances = {v: float("inf") for v in self.vertex_ids}
         distances[self.source_vertex_id] = 0
         queue = [self.source_vertex_id]
-        
+
         while queue:
-            current = queue.pop(0) 
+            current = queue.pop(0)
             for neighbor in self.graph[current]:
                 if (current, neighbor) in self.enabled_edges:
-                    if distances[neighbor] == float('inf'):
+                    if distances[neighbor] == float("inf"):
                         distances[neighbor] = distances[current] + 1
                         queue.append(neighbor)
-                        
+
         return distances
 
     def find_downstream_vertices(self, edge_id: int) -> List[int]:
@@ -143,12 +149,11 @@ class GraphProcessor:
             return []
 
         u, v = self.edge_vertex_id_pairs[edge_index]
-        
-        dist_u = self.distances.get(u, float('inf'))
-        dist_v = self.distances.get(v, float('inf'))
+
+        dist_u = self.distances.get(u, float("inf"))
+        dist_v = self.distances.get(v, float("inf"))
 
         if dist_u == dist_v:
             raise ValueError(f"Vertices {u} and {v} are equidistant from source")
 
         return [v] if dist_u < dist_v else [u]
-    

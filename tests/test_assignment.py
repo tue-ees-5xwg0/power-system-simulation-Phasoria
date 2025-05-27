@@ -1,17 +1,18 @@
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add parent directory to path to allow importing Assignment_1
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from power_system_simulation.Assignment_1 import (
+    GraphCycleError,
+    GraphNotFullyConnectedError,
     GraphProcessor,
     IDNotFoundError,
-    InputLengthDoesNotMatchError,
     IDNotUniqueError,
-    GraphNotFullyConnectedError,
-    GraphCycleError
+    InputLengthDoesNotMatchError,
 )
+
 
 class TestGraphProcessor(unittest.TestCase):
     """Test suite for the GraphProcessor class."""
@@ -44,53 +45,29 @@ class TestGraphProcessor(unittest.TestCase):
                 self.edge_ids,
                 self.edge_vertex_id_pairs,
                 [True, False],  # Incorrect length
-                self.source_vertex_id
+                self.source_vertex_id,
             )
 
     def test_duplicate_vertex_ids(self):
         """Test that IDNotUniqueError is raised for duplicate vertex IDs."""
         with self.assertRaises(IDNotUniqueError):
-            GraphProcessor(
-                [1, 1, 2],  # Duplicate vertex IDs
-                [10],
-                [(1, 2)],
-                [True],
-                1
-            )
+            GraphProcessor([1, 1, 2], [10], [(1, 2)], [True], 1)  # Duplicate vertex IDs
 
     def test_missing_vertex_in_edge(self):
         """Test that IDNotFoundError is raised for edges referencing non-existent vertices."""
         with self.assertRaises(IDNotFoundError):
-            GraphProcessor(
-                [1, 2],  # Vertex 3 does not exist
-                [10],
-                [(1, 3)],  # Invalid edge
-                [True],
-                1
-            )
+            GraphProcessor([1, 2], [10], [(1, 3)], [True], 1)  # Vertex 3 does not exist  # Invalid edge
 
     def test_graph_not_connected(self):
         """Test that GraphNotFullyConnectedError is raised for disconnected graphs."""
         with self.assertRaises(GraphNotFullyConnectedError):
-            GraphProcessor(
-                [1, 2, 3],
-                [10],
-                [(1, 2)],  # No path to vertex 3
-                [True],
-                1
-            )
+            GraphProcessor([1, 2, 3], [10], [(1, 2)], [True], 1)  # No path to vertex 3
 
     def test_cycle_detection(self):
         """Test that GraphCycleError is raised for cyclic graphs."""
         edge_pairs_with_cycle = [(1, 2), (2, 3), (3, 1), (3, 4)]  # Cycle: 1 → 2 → 3 → 1
         with self.assertRaises(GraphCycleError):
-            GraphProcessor(
-                [1, 2, 3, 4],
-                [10, 11, 12, 13],
-                edge_pairs_with_cycle,
-                [True, True, True, True],
-                1
-            )
+            GraphProcessor([1, 2, 3, 4], [10, 11, 12, 13], edge_pairs_with_cycle, [True, True, True, True], 1)
 
     def test_find_downstream_vertices(self):
         """Test that downstream vertices are correctly identified for a given edge."""
@@ -105,7 +82,7 @@ class TestGraphProcessor(unittest.TestCase):
             edge_ids=[10, 11, 12, 13],
             edge_vertex_id_pairs=[(1, 2), (1, 3), (2, 4), (3, 5)],  # Tree structure
             edge_enabled=[True, True, True, True],
-            source_vertex_id=1
+            source_vertex_id=1,
         )
         # Edge 10: (1,2) → downstream is 2
         self.assertEqual(processor.find_downstream_vertices(10), [2])
@@ -123,7 +100,7 @@ class TestGraphProcessor(unittest.TestCase):
             edge_ids=[10, 11, 12, 13],
             edge_vertex_id_pairs=[(1, 2), (2, 3), (3, 4), (1, 4)],  # Alternative path
             edge_enabled=[True, True, False, True],  # Disable (3,4) but keep (1,4)
-            source_vertex_id=1
+            source_vertex_id=1,
         )
         # Graph should remain valid
         self.assertIsInstance(processor, GraphProcessor)
@@ -141,25 +118,16 @@ class TestGraphProcessor(unittest.TestCase):
     def test_empty_graph(self):
         """Test behavior with an empty graph."""
         with self.assertRaises(InputLengthDoesNotMatchError):
-            GraphProcessor(
-                vertex_ids=[],
-                edge_ids=[],
-                edge_vertex_id_pairs=[],
-                edge_enabled=[],
-                source_vertex_id=None
-            )
+            GraphProcessor(vertex_ids=[], edge_ids=[], edge_vertex_id_pairs=[], edge_enabled=[], source_vertex_id=None)
 
     def test_single_vertex_graph(self):
         """Test behavior with a single vertex and no edges."""
         processor = GraphProcessor(
-            vertex_ids=[1],
-            edge_ids=[],
-            edge_vertex_id_pairs=[],
-            edge_enabled=[],
-            source_vertex_id=1
+            vertex_ids=[1], edge_ids=[], edge_vertex_id_pairs=[], edge_enabled=[], source_vertex_id=1
         )
         with self.assertRaises(IDNotFoundError):
             processor.find_downstream_vertices(10)  # No edges exist
+
 
 if __name__ == "__main__":
     unittest.main()
