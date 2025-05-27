@@ -152,7 +152,3 @@ class GraphProcessor:
 
         return [v] if dist_u < dist_v else [u]
     
-<<<<<<< Updated upstream:src/power_system_simulation/Assignment_1
-    
-=======
->>>>>>> Stashed changes:src/power_system_simulation/Assignment_1.py
