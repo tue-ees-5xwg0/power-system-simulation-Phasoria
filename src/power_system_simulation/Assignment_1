@@ -124,7 +124,7 @@ class GraphProcessor:
         queue = [self.source_vertex_id]
         
         while queue:
-            current = queue.pop(0)
+            current = queue.pop(0) 
             for neighbor in self.graph[current]:
                 if (current, neighbor) in self.enabled_edges:
                     if distances[neighbor] == float('inf'):
@@ -152,4 +152,7 @@ class GraphProcessor:
 
         return [v] if dist_u < dist_v else [u]
     
+<<<<<<< Updated upstream:src/power_system_simulation/Assignment_1
     
+=======
+>>>>>>> Stashed changes:src/power_system_simulation/Assignment_1.py
