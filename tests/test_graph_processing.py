@@ -1,6 +1,6 @@
 
 import pytest
-from power_system_simulation.find_alternative_edges import (
+from find_alternative_edges import (
     GraphProcessor,
     IDNotFoundError,
     InputLengthDoesNotMatchError,
