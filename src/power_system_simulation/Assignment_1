@@ -1,1 +1,155 @@
+from typing import List, Tuple
+from collections import defaultdict
 
+class IDNotFoundError(Exception):
+    pass
+
+class InputLengthDoesNotMatchError(Exception):
+    pass
+
+class IDNotUniqueError(Exception):
+    pass
+
+class GraphNotFullyConnectedError(Exception):
+    pass
+
+class GraphCycleError(Exception):
+    pass
+
+class GraphProcessor:
+    def __init__(
+        self,
+        vertex_ids: List[int],
+        edge_ids: List[int],
+        edge_vertex_id_pairs: List[Tuple[int, int]],
+        edge_enabled: List[bool],
+        source_vertex_id: int,
+    ) -> None:
+        # Input validation
+        if len({len(edge_ids), len(edge_vertex_id_pairs), len(edge_enabled)}) != 1:
+            raise InputLengthDoesNotMatchError("All edge-related lists must have equal length")
+
+        if len(vertex_ids) != len(set(vertex_ids)):
+            raise IDNotUniqueError("Vertex IDs must be unique")
+        if len(edge_ids) != len(set(edge_ids)):
+            raise IDNotUniqueError("Edge IDs must be unique")
+
+        # Check for empty graph
+        if not vertex_ids:
+            raise InputLengthDoesNotMatchError("Graph must have at least one vertex")
+
+        if source_vertex_id not in vertex_ids:
+            raise IDNotFoundError(f"Source vertex {source_vertex_id} not found in vertex IDs")
+
+        # Validate all edge vertices exist
+        vertex_set = set(vertex_ids)
+        for u, v in edge_vertex_id_pairs:
+            if u not in vertex_set or v not in vertex_set:
+                raise IDNotFoundError(f"Edge contains invalid vertex: ({u}, {v})")
+
+        self.vertex_ids = vertex_ids
+        self.edge_ids = edge_ids
+        self.edge_vertex_id_pairs = edge_vertex_id_pairs
+        self.edge_enabled = edge_enabled
+        self.source_vertex_id = source_vertex_id
+
+        # Build the graph
+        self.graph = defaultdict(list)
+        self.enabled_edges = set()
+        for edge, enabled in zip(edge_vertex_id_pairs, edge_enabled):
+            if enabled:
+                u, v = edge
+                self.graph[u].append(v)
+                self.graph[v].append(u)
+                self.enabled_edges.add((u, v))
+                self.enabled_edges.add((v, u))
+
+        # Check connectivity and acyclicity
+        if not self._is_connected():
+            raise GraphNotFullyConnectedError("Graph must be connected")
+        if self._has_cycle():
+            raise GraphCycleError("Graph must be acyclic")
+
+        # Precompute distances from source
+        self.distances = self._compute_distances()
+
+    def _is_connected(self) -> bool:
+        """Check if the enabled graph is connected using BFS."""
+        if not self.vertex_ids:
+            return False
+            
+        visited = set()
+        queue = [self.source_vertex_id]
+        
+        while queue:
+            vertex = queue.pop(0)
+            if vertex not in visited:
+                visited.add(vertex)
+                for neighbor in self.graph[vertex]:
+                    if (vertex, neighbor) in self.enabled_edges:
+                        queue.append(neighbor)
+        
+        return len(visited) == len(set(self.vertex_ids))
+
+    def _has_cycle(self) -> bool:
+        """Check if the enabled graph has cycles using DFS."""
+        visited = set()
+        
+        for vertex in self.vertex_ids:
+            if vertex not in visited:
+                if self._dfs_cycle_detect(vertex, visited, None):
+                    return True
+        return False
+
+    def _dfs_cycle_detect(self, vertex, visited, parent):
+        """DFS helper for cycle detection."""
+        visited.add(vertex)
+        
+        for neighbor in self.graph[vertex]:
+            if (vertex, neighbor) not in self.enabled_edges:
+                continue
+                
+            if neighbor not in visited:
+                if self._dfs_cycle_detect(neighbor, visited, vertex):
+                    return True
+            elif neighbor != parent:
+                return True
+                
+        return False
+
+    def _compute_distances(self) -> dict:
+        """Compute shortest distances from source using BFS."""
+        distances = {v: float('inf') for v in self.vertex_ids}
+        distances[self.source_vertex_id] = 0
+        queue = [self.source_vertex_id]
+        
+        while queue:
+            current = queue.pop(0)
+            for neighbor in self.graph[current]:
+                if (current, neighbor) in self.enabled_edges:
+                    if distances[neighbor] == float('inf'):
+                        distances[neighbor] = distances[current] + 1
+                        queue.append(neighbor)
+                        
+        return distances
+
+    def find_downstream_vertices(self, edge_id: int) -> List[int]:
+        """Find vertices directly downstream of the specified edge."""
+        if edge_id not in self.edge_ids:
+            raise IDNotFoundError(f"Edge ID {edge_id} not found")
+
+        edge_index = self.edge_ids.index(edge_id)
+        if not self.edge_enabled[edge_index]:
+            return []
+
+        u, v = self.edge_vertex_id_pairs[edge_index]
+        
+        dist_u = self.distances.get(u, float('inf'))
+        dist_v = self.distances.get(v, float('inf'))
+
+        if dist_u == dist_v:
+            raise ValueError(f"Vertices {u} and {v} are equidistant from source")
+
+        return [v] if dist_u < dist_v else [u]
+    
+    
