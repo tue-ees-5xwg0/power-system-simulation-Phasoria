@@ -37,7 +37,7 @@ def graph_with_backup_edge():
 
 @pytest.fixture
 def complex_graph():
-    """0--10--1--20--2--30--3
+    r"""0--10--1--20--2--30--3
        \              /
         \--40--4--50-"""
     return GraphProcessor(
